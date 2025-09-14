@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UWP Trade Code Evaluator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --muted: #9ca3af;
+      --text: #e5e7eb;
+      --accent: #22d3ee;
+      --bad: #ef4444;
+      --good: #10b981;
+      --chip: #1f2937;
+      --chip-border: #374151;
+    }
+    body {
+      background: linear-gradient(180deg, #0b1020, #0a0f1d 45%, #0d1223);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      margin: 0; padding: 0;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 980px; margin: 3rem auto; padding: 0 1rem;
+    }
+    .card {
+      background: rgba(17,24,39,0.7); border: 1px solid #1f2937;
+      border-radius: 12px; padding: 1.25rem; backdrop-filter: blur(6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    h1 { font-weight: 700; letter-spacing: 0.3px; margin: 0 0 0.5rem; }
+    p.lead { color: var(--muted); margin-top: 0; }
+
+    .row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; align-items: center; }
+    input[type="text"] {
+      width: 100%; font-size: 1rem; line-height: 1;
+      padding: 0.8rem 0.9rem; border-radius: 10px;
+      background: #0b1020; color: var(--text);
+      border: 1px solid #223; outline: none;
+    }
+    input[type="text"]::placeholder { color: #6b7280; }
+    button {
+      padding: 0.8rem 1.0rem; border-radius: 10px;
+      background: linear-gradient(90deg, #06b6d4, #22d3ee);
+      color: #06121a; font-weight: 700; border: none; cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .hint { color: var(--muted); font-size: 0.9rem; margin-top: 0.4rem; }
+
+    .error {
+      margin-top: 0.75rem; color: #fecaca; background: #7f1d1d;
+      border: 1px solid #b91c1c; padding: 0.6rem 0.8rem; border-radius: 8px;
+      display: none;
+    }
+
+    .grid {
+      margin-top: 1rem;
+      display: grid; gap: 0.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .tile {
+      background: var(--chip);
+      border: 1px solid var(--chip-border);
+      border-radius: 10px; padding: 0.8rem 0.9rem;
+    }
+    .tile h3 { margin: 0 0 0.35rem; font-size: 0.95rem; color: var(--accent); font-weight: 700; letter-spacing: 0.2px; }
+    .kv { font-size: 0.95rem; }
+    .kv .k { color: var(--muted); margin-right: 0.35rem; }
+    .kv .v { font-weight: 700; }
+
+    .section-title {
+      margin: 1.25rem 0 0.5rem;
+      font-size: 1.05rem; color: var(--accent); font-weight: 800; letter-spacing: 0.3px;
+    }
+    .chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .chip {
+      background: #0b1020; border: 1px solid #1f2937; color: var(--text);
+      border-radius: 999px; padding: 0.35rem 0.65rem; display: inline-flex; align-items: center; gap: 0.45rem;
+      font-size: 0.95rem;
+    }
+    .chip .code { font-weight: 800; color: #93c5fd; }
+    .chip .desc { color: var(--muted); }
+
+    .muted-list { color: var(--muted); font-size: 0.95rem; line-height: 1.5; }
+    .divider { height: 1px; background: #1f2937; margin: 1rem 0; }
+
+    .empty {
+      color: #a7f3d0; background: #064e3b; border: 1px solid #065f46;
+      padding: 0.5rem 0.75rem; border-radius: 8px; display: inline-block; margin-top: 0.5rem;
+    }
+
+    .footer {
+      margin-top: 1.5rem; color: var(--muted); font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>UWP Trade Code Evaluator</h1>
+      <p class="lead">Enter an 9‑character UWP (hex digits 0–9, A–F) in order:<br /> Starport, Size, Atmosphere, Water, Population, Government, Law - then a hyphen - and finally Tech.<br /> For example: A867A69-F</p>
+
+      <div class="row">
+        <input id="uwp" type="text" placeholder="e.g., A56A789C" maxlength="9" />
+        <button id="go">Evaluate</button>
+      </div>
+      <div class="hint">There must be nine characters. Hyphen or dash is required. Letters are case‑insensitive. Press Enter or click Evaluate.</div>
+      <div id="error" class="error"></div>
+
+      <div id="results" style="display:none;">
+        <div class="section-title">Parsed UWP</div>
+        <div class="grid" id="parsed"></div>
+
+        <div class="section-title">Trade codes</div>
+        <div id="codes" class="chips"></div>
+
+        <div class="divider"></div>
+        <div class="section-title">Key</div>
+        <div class="muted-list" id="key">
+          Ag = Agricultural • As = Asteroid • Ba = Barren • De = Desert • Fl = Non‑water fluid oceans • Ga = Garden •
+          Hi = High population • Ht = High technology • Ic = Ice‑capped • In = Industrial • Lo = Low population •
+          Lt = Low technology • Na = Non‑agricultural • Ni = Non‑industrial • Po = Poor • Ri = Rich •
+          Wa = Water world • Va = Vacuum
+        </div>
+
+        <div class="footer">Tip: Many worlds qualify for multiple trade codes and all that apply will be shown. Trade codes applied as defined <a href="https://www.drivethrurpg.com/en/product/415159/cepheus-deluxe-enhanced-edition">here</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Helpers ---
+    const $ = (sel) => document.querySelector(sel);
+    const inSet = (v, list) => list.includes(v);
+    const between = (min, max, v) => v >= min && v <= max;
+    const isHex8 = (s) => /^[0-9a-f]{8}$/i.test(s);
+
+    const tradeKey = {
+      Ag: "Agricultural",
+      As: "Asteroid",
+      Ba: "Barren",
+      De: "Desert",
+      Fl: "Non-water fluid oceans",
+      Ga: "Garden",
+      Hi: "High population",
+      Ht: "High technology",
+      Ic: "Ice-capped",
+      In: "Industrial",
+      Lo: "Low population",
+      Lt: "Low technology",
+      Na: "Non-agricultural",
+      Ni: "Non-industrial",
+      Po: "Poor",
+      Ri: "Rich",
+      Wa: "Water world",
+      Va: "Vacuum"
+    };
+
+    function parseUWP(raw) {
+      const u = raw.trim().toUpperCase();
+      return {
+        starport: parseInt(u[0], 16),
+        size: parseInt(u[1], 16),
+        atmosphere: parseInt(u[2], 16),
+        water: parseInt(u[3], 16),
+        population: parseInt(u[4], 16),
+        government: parseInt(u[5], 16),
+        law: parseInt(u[6], 16),
+        tech: parseInt(u[7], 16),
+        raw: u
+      };
+    }
+
+    function computeTradeCodes(u) {
+      const codes = new Set();
+      const { size, atmosphere: atm, water, population: pop, tech } = u;
+
+      // Ag: Atmosphere 4–9 AND Water 4–8 AND Population 5–7
+      if (between(4, 9, atm) && between(4, 8, water) && between(5, 7, pop)) codes.add("Ag");
+
+      // As: Size = 0
+      if (size === 0) codes.add("As");
+
+      // Ba: Population = 0
+      if (pop === 0) codes.add("Ba");
+
+      // De: Atmosphere ≥ 2 AND Water = 0
+      if (atm >= 2 && water === 0) codes.add("De");
+
+      // Fl: Atmosphere ≥ A (10) AND Water ≥ 1
+      if (atm >= 10 && water >= 1) codes.add("Fl");
+
+      // Ga: Atmosphere 5,6,8 AND Size = 0
+      if (inSet(atm, [5, 6, 8]) && size === 0) codes.add("Ga");
+
+      // Hi: Population ≥ 9
+      if (pop >= 9) codes.add("Hi");
+
+      // Ht: Tech ≥ C (12)
+      if (tech >= 12) codes.add("Ht");
+
+      // Ic: Atmosphere 0 or 1 AND Water ≥ 1
+      if (inSet(atm, [0, 1]) && water >= 1) codes.add("Ic");
+
+      // In: Atmosphere 0,1,2,4,7,9 AND Population ≥ 9
+      if (inSet(atm, [0, 1, 2, 4, 7, 9]) && pop >= 9) codes.add("In");
+
+      // Lo: Population 1,2,3
+      if (inSet(pop, [1, 2, 3])) codes.add("Lo");
+
+      // Lt: Tech ≤ 5
+      if (tech <= 5) codes.add("Lt");
+
+      // Na: Atmosphere ≤ 3 AND Water ≤ 3 AND Population ≥ 6
+      if (atm <= 3 && water <= 3 && pop >= 6) codes.add("Na");
+
+      // Ni: Population 4,5,6
+      if (inSet(pop, [4, 5, 6])) codes.add("Ni");
+
+      // Po: Atmosphere 2,3,4,5,6 AND Water ≤ 3
+      if (inSet(atm, [2, 3, 4, 5, 6]) && water <= 3) codes.add("Po");
+
+      // Ri: Atmosphere 6 or 8 AND Population 6,7,8
+      if (inSet(atm, [6, 8]) && inSet(pop, [6, 7, 8])) codes.add("Ri");
+
+      // Wa: Water ≥ A (10)
+      if (water >= 10) codes.add("Wa");
+
+      // Va: Atmosphere = 0
+      if (atm === 0) codes.add("Va");
+
+      return [...codes];
+    }
+
+    function renderParsed(u) {
+      const fields = [
+        ["Starport", u.raw[0], u.starport],
+        ["Size", u.raw[1], u.size],
+        ["Atmosphere", u.raw[2], u.atmosphere],
+        ["Water", u.raw[3], u.water],
+        ["Population", u.raw[4], u.population],
+        ["Government", u.raw[5], u.government],
+        ["Law", u.raw[6], u.law],
+        ["Tech", u.raw[7], u.tech],
+      ];
+      const parsedEl = $("#parsed");
+      parsedEl.innerHTML = fields.map(([name, hex, dec]) => `
+        <div class="tile">
+          <h3>${name}</h3>
+          <div class="kv"><span class="k">Hex:</span><span class="v">${hex}</span></div>
+          <div class="kv"><span class="k">Value:</span><span class="v">${dec}</span></div>
+        </div>
+      `).join("");
+    }
+
+    function renderCodes(codes) {
+      const el = $("#codes");
+      if (!codes.length) {
+        el.innerHTML = `<div class="empty">No trade codes apply.</div>`;
+        return;
+      }
+      el.innerHTML = codes.map(code => `
+        <span class="chip"><span class="code">${code}</span><span class="desc">${tradeKey[code]}</span></span>
+      `).join("");
+    }
+
+    function showError(msg) {
+      const e = $("#error");
+      e.textContent = msg;
+      e.style.display = msg ? "block" : "none";
+    }
+
+    function evaluate() {
+      const full = $("#uwp").value.trim();
+ //   need to remove the pesky hypen, emdash or whatever
+     char = full.slice(7,8);
+     input = full.replace(char, "");
+      if (!isHex8(input)) {
+         showError("Please enter exactly nine hexadecimal characters (0–9, A–F) with a hyphen before tech level. You probably have not entered enough");
+         $("#results").style.display = "none";
+        return;
+      }
+      showError("");
+
+      const u = parseUWP(input);
+      renderParsed(u);
+      const codes = computeTradeCodes(u);
+      renderCodes(codes);
+      $("#results").style.display = "block";
+    }
+
+    $("#go").addEventListener("click", evaluate);
+    $("#uwp").addEventListener("keyup", (e) => {
+      if (e.key === "Enter") evaluate();
+    });
+  </script>
+</body>
+</html>
