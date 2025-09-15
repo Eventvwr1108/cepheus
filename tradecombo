@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cargo Generator for Cepheus</title>
+<style>
+  body {
+    background-color: Teal;
+    color: White;
+    font: 14px/1.4 Arial, sans-serif;
+    margin: 0;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: start;
+    background-color: DarkSlateGray;
+    border: 2px solid LightGray;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+  .section-label {
+    color: LightGray;
+    font-weight: bold;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: DimGray;
+    border: 1px solid LightGray;
+    border-radius: 999px;
+    padding: 4px 8px;
+  }
+  .pill input {
+    accent-color: Gold;
+  }
+  .btn {
+    background-color: SteelBlue;
+    color: White;
+    border: 1px solid LightGray;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .btn:hover {
+    background-color: DodgerBlue;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .panel {
+    background-color: DarkSlateGray;
+    border: 2px solid LightGray;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .panel h3 {
+    margin-top: 0;
+    color: White;
+  }
+  .goods-list {
+    display: grid;
+    gap: 8px;
+  }
+  .card {
+    background-color: DimGray;
+    border: 1px solid LightGray;
+    border-radius: 6px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  .card-title {
+    font-weight: bold;
+    color: White;
+  }
+  .meta {
+    color: LightGray;
+    font-size: 12px;
+  }
+  .price {
+    color: Gold;
+    font-weight: bold;
+  }
+  .choose {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .qty-input {
+    width: 60px;
+    background-color: White;
+    color: Black;
+    border: 1px solid Gray;
+    border-radius: 4px;
+    padding: 4px;
+  }
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid LightGray;
+  }
+  .table th, .table td {
+    padding: 6px;
+    border-bottom: 1px solid LightGray;
+  }
+  .table th {
+    background-color: SlateGray;
+    color: White;
+  }
+  .table tfoot td {
+    background-color: Gray;
+    font-weight: bold;
+  }
+  .muted {
+    color: LightGray;
+  }
+  .uwp-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    margin-top: 2px;
+  }
+  .uwp-input-row input[type="text"] {
+    background-color: White;
+    color: Black;
+    border: 1px solid Gray;
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 16px;
+    width: 170px;
+    font-family: monospace;
+  }
+  .uwp-input-row .btn {
+    padding: 7px 14px;
+    font-size: 15px;
+  }
+  .uwp-hint {
+    color: LightGray;
+    font-size: 14px;
+    margin-bottom: 4px;
+    margin-left: 2px;
+  }
+  .uwp-error {
+    color: #ffbcbc;
+    background: #7f1d1d;
+    border: 1px solid #b91c1c;
+    padding: 5px 8px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    margin-left: 2px;
+    display: none;
+    font-size: 14px;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div>
+      <div class="uwp-input-row">
+        <label for="uwp" class="section-label">Enter UWP:</label>
+        <input type="text" id="uwp" maxlength="9" placeholder="e.g. A867954-C" autocomplete="off" />
+        <button class="btn" id="parseUWPBtn">Parse UWP</button>
+      </div>
+      <div class="uwp-hint">Format: 8 hex digits, hyphen, 1 hex digit (e.g. A867954-C). Letters are case-insensitive. Hyphen required before tech level.</div>
+      <div class="uwp-error" id="uwpError"></div>
+      <div class="row">
+        <span class="section-label">World trade codes:</span>
+        <!-- Trade code checkboxes -->
+        <label class="pill"><input type="checkbox" value="Ag" class="trade-code">Ag</label>
+        <label class="pill"><input type="checkbox" value="As" class="trade-code">As</label>
+        <label class="pill"><input type="checkbox" value="Ba" class="trade-code">Ba</label>
+        <label class="pill"><input type="checkbox" value="De" class="trade-code">De</label>
+        <label class="pill"><input type="checkbox" value="Fl" class="trade-code">Fl</label>
+        <label class="pill"><input type="checkbox" value="Ga" class="trade-code">Ga</label>
+        <label class="pill"><input type="checkbox" value="Hi" class="trade-code">Hi</label>
+        <label class="pill"><input type="checkbox" value="Ht" class="trade-code">Ht</label>
+        <label class="pill"><input type="checkbox" value="Ic" class="trade-code">Ic</label>
+        <label class="pill"><input type="checkbox" value="In" class="trade-code">In</label>
+        <label class="pill"><input type="checkbox" value="Lo" class="trade-code">Lo</label>
+        <label class="pill"><input type="checkbox" value="Lt" class="trade-code">Lt</label>
+        <label class="pill"><input type="checkbox" value="Na" class="trade-code">Na</label>
+        <label class="pill"><input type="checkbox" value="Ni" class="trade-code">Ni</label>
+        <label class="pill"><input type="checkbox" value="Po" class="trade-code">Po</label>
+        <label class="pill"><input type="checkbox" value="Ri" class="trade-code">Ri</label>
+        <label class="pill"><input type="checkbox" value="Wa" class="trade-code">Wa</label>
+        <label class="pill"><input type="checkbox" value="Va" class="trade-code">Va</label>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <span class="section-label">Broker:</span>
+        <label class="pill"><input type="radio" name="broker" value="0" checked>No broker</label>
+        <label class="pill"><input type="radio" name="broker" value="1">DM+1</label>
+        <label class="pill"><input type="radio" name="broker" value="2">DM+2</label>
+        <label class="pill"><input type="radio" name="broker" value="3">DM+3</label>
+        <label class="pill"><input type="radio" name="broker" value="4">DM+4</label>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn" id="generateBtn">Generate market</button>
+    </div>
+  </div>
+
+    <div class="section-title"><strong>Key</strong></div>
+        <div class="muted-list" id="key">
+          Ag = Agricultural | As = Asteroid | Ba = Barren | De = Desert | Fl = Non‑water fluid oceans | Ga = Garden |
+          Hi = High population | Ht = High technology | Ic = Ice‑capped | In = Industrial | Lo = Low population |
+          Lt = Low technology | Na = Non‑agricultural | Ni = Non‑industrial | Po = Poor | Ri = Rich |
+          Wa = Water world | Va = Vacuum
+        </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>Available cargoes</h3>
+      <div class="goods-list" id="availableList">
+        <div class="muted">Click “Generate market” to roll availability and prices.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Cargo manifest</h3>
+      <div class="muted" id="manifestHint">Select cargoes and enter quantities on the left.</div>
+      <table class="table" id="manifestTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Good</th>
+            <th>Qty</th>
+            <th>Price/ton</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="manifestBody"></tbody>
+        <tfoot>
+          <tr>
+            <td>Totals</td>
+            <td id="totalTons">0</td>
+            <td></td>
+            <td id="totalPrice">Cr0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== Trade code logic from tradecodes.html ======
+const tradeKey = {
+  Ag: "Agricultural", As: "Asteroid", Ba: "Barren", De: "Desert", Fl: "Non-water fluid oceans",
+  Ga: "Garden", Hi: "High population", Ht: "High technology", Ic: "Ice-capped", In: "Industrial",
+  Lo: "Low population", Lt: "Low technology", Na: "Non-agricultural", Ni: "Non-industrial",
+  Po: "Poor", Ri: "Rich", Wa: "Water world", Va: "Vacuum"
+};
+function inSet(v, list) { return list.includes(v); }
+function between(min, max, v) { return v >= min && v <= max; }
+function isHex8(s) { return /^[0-9a-f]{8}$/i.test(s); }
+function parseUWP(raw) {
+  // Accepts 9 chars: 8 hex + hyphen/dash + 1 hex
+  const u = raw.trim().toUpperCase();
+  // Remove hyphen at pos 7, if present
+  let input = u;
+  if (u[7] === "-" || u[7] === "–" || u[7] === "—") input = u.slice(0, 7) + u.slice(8);
+  else if (u[8] === "-" || u[8] === "–" || u[8] === "—") input = u.slice(0, 8) + u.slice(9);
+  if (!isHex8(input)) return null;
+  return {
+    starport: parseInt(input[0], 16),
+    size: parseInt(input[1], 16),
+    atmosphere: parseInt(input[2], 16),
+    water: parseInt(input[3], 16),
+    population: parseInt(input[4], 16),
+    government: parseInt(input[5], 16),
+    law: parseInt(input[6], 16),
+    tech: parseInt(input[7], 16),
+    raw: input
+  };
+}
+function computeTradeCodes(u) {
+  if (!u) return [];
+  const codes = new Set();
+  const { size, atmosphere: atm, water, population: pop, tech } = u;
+  if (between(4, 9, atm) && between(4, 8, water) && between(5, 7, pop)) codes.add("Ag");
+  if (size === 0) codes.add("As");
+  if (pop === 0) codes.add("Ba");
+  if (atm >= 2 && water === 0) codes.add("De");
+  if (atm >= 10 && water >= 1) codes.add("Fl");
+  if (inSet(atm, [5, 6, 8]) && size === 0) codes.add("Ga");
+  if (pop >= 9) codes.add("Hi");
+  if (tech >= 12) codes.add("Ht");
+  if (inSet(atm, [0, 1]) && water >= 1) codes.add("Ic");
+  if (inSet(atm, [0, 1, 2, 4, 7, 9]) && pop >= 9) codes.add("In");
+  if (inSet(pop, [1, 2, 3])) codes.add("Lo");
+  if (tech <= 5) codes.add("Lt");
+  if (atm <= 3 && water <= 3 && pop >= 6) codes.add("Na");
+  if (inSet(pop, [4, 5, 6])) codes.add("Ni");
+  if (inSet(atm, [2, 3, 4, 5, 6]) && water <= 3) codes.add("Po");
+  if (inSet(atm, [6, 8]) && inSet(pop, [6, 7, 8])) codes.add("Ri");
+  if (water >= 10) codes.add("Wa");
+  if (atm === 0) codes.add("Va");
+  return [...codes];
+}
+function setTradeCodeCheckboxes(codes) {
+  document.querySelectorAll('.trade-code').forEach(cb => {
+    cb.checked = codes.includes(cb.value);
+  });
+}
+
+// ====== Price factors and clamp ======
+const PRICE_FACTOR = {
+  2: 2.0, 3: 1.8, 4: 1.6, 5: 1.4,
+  6: 1.2, 7: 1.1, 8: 1.0, 9: 0.9,
+  10: 0.8, 11: 0.7, 12: 0.6, 13: 0.5,
+  14: 0.4, 15: 0.3, 16: 0.2
+};
+function clampPriceRoll(n) {
+  if (n < 2) return 2;
+  if (n > 16) return 16;
+  return n;
+}
+
+// ====== Broker DM and commission ======
+const BROKER_INFO = {
+  0: { dm: 0, commission: 0 },
+  1: { dm: 1, commission: 0.05 },
+  2: { dm: 2, commission: 0.10 },
+  3: { dm: 3, commission: 0.15 },
+  4: { dm: 4, commission: 0.20 }
+};
+function getBrokerInfo() {
+  const val = parseInt(document.querySelector('input[name="broker"]:checked')?.value ?? "0", 10);
+  return BROKER_INFO[val];
+}
+
+// ====== Dice utilities ======
+function rollD(sides = 6) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+function rollND(n, sides = 6) {
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += rollD(sides);
+  return sum;
+}
+function parseDiceNotation(notation) {
+  const m = /^(\d+)D$/i.exec(notation.trim());
+  if (!m) return 0;
+  const n = parseInt(m[1], 10);
+  return rollND(n, 6);
+}
+
+// ====== DM parsing ======
+function parseDM(dmStr) {
+  if (!dmStr) return null;
+  const m = /^([A-Za-z]{2})\+(\d+)$/.exec(dmStr.trim());
+  if (!m) return null;
+  return { code: m[1], mod: parseInt(m[2], 10) };
+}
+
+// ====== Price calculation ======
+function computePricePerTon(base, dm1, dm2, selectedCodes, brokerDM) {
+  let roll = rollND(2, 6);
+  roll += brokerDM;
+  const dmA = parseDM(dm1);
+  const dmB = parseDM(dm2);
+  const codeSet = new Set(selectedCodes.map(s => s.toLowerCase()));
+  if (dmA && codeSet.has(dmA.code.toLowerCase())) roll += dmA.mod;
+  if (dmB && codeSet.has(dmB.code.toLowerCase())) roll += dmB.mod;
+  roll = clampPriceRoll(roll);
+  const factor = PRICE_FACTOR[roll] ?? 1.0;
+  return { roll, price: Math.round(base * factor) };
+}
+function cr(n) {
+  return "Cr" + n.toLocaleString();
+}
+
+// ====== Example goods data ======
+// In your real build, replace with parsed CSV data
+const COMMON_GOODS = [
+  { name: "Basic Consumable Goods", base: 1000, qty: "10D", dm1: "Ag+3", dm2: "Ga+2" },
+  { name: "Basic Electronics", base: 25000, qty: "10D", dm1: "Ht+2", dm2: "In+4" },
+  { name: "Basic Machine Parts", base: 1000, qty: "10D", dm1: "In+3", dm2: "Ri+2" },
+  { name: "Basic Manufactured Goods", base: 20000, qty: "10D", dm1: "In+3", dm2: "Ri+2" },
+  { name: "Basic Raw Materials", base: 5000, qty: "10D", dm1: "As+3", dm2: "Ni+1" },
+  { name: "Common Unrefined Ore", base: 2000, qty: "10D", dm1: "As+2", dm2: "Va+1" }
+];
+const TRADE_GOODS = [
+  { name: "Advanced Electronics", base: 100000, qty: "5D", dm1: "Ht+2", dm2: "In+4" },
+  { name: "Agricultural Equipment", base: 150000, qty: "1D", dm1: "In+3", dm2: "Ri+2" },
+  { name: "Animal Products", base: 1500, qty: "20D", dm1: "Ag+2", dm2: "Ga+3" },
+  { name: "Computers", base: 150000, qty: "2D", dm1: "Ht+3", dm2: "In+2" },
+  { name: "Precious Metals", base: 50000, qty: "1D", dm1: "As+3", dm2: "Ic+2" }
+  // ... add the rest from your CSV
+];
+
+// ====== Market generation ======
+let market = [];
+function getSelectedCodes() {
+  return Array.from(document.querySelectorAll('.trade-code:checked')).map(el => el.value);
+}
+function sampleTradeGoods() {
+  const count = Math.max(1, Math.min(6, rollD()));
+  const pool = [...TRADE_GOODS];
+  const chosen = [];
+  for (let i = 0; i < count && pool.length; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    chosen.push(pool.splice(idx, 1)[0]);
+  }
+  return chosen;
+}
+function generateMarket() {
+  const selectedCodes = getSelectedCodes();
+  const broker = getBrokerInfo();
+  const items = [];
+  for (const g of COMMON_GOODS) {
+    const available = parseDiceNotation(g.qty);
+    const { roll, price } = computePricePerTon(g.base, g.dm1, g.dm2, selectedCodes, broker.dm);
+    items.push({ id: `common-${g.name}`, name: g.name, base: g.base, dm1: g.dm1, dm2: g.dm2, available, priceRoll: roll, pricePerTon: price });
+  }
+  for (const g of sampleTradeGoods()) {
+    const available = parseDiceNotation(g.qty);
+    const { roll, price } = computePricePerTon(g.base, g.dm1, g.dm2, selectedCodes, broker.dm);
+    items.push({ id: `trade-${g.name}-${Math.random().toString(36).slice(2,7)}`, name: g.name, base: g.base, dm1: g.dm1, dm2: g.dm2, available, priceRoll: roll, pricePerTon: price });
+  }
+  market = items;
+  renderAvailable();
+  clearManifest();
+}
+
+// ====== Rendering ======
+function renderAvailable() {
+  const root = document.getElementById('availableList');
+  root.innerHTML = "";
+  if (market.length === 0) {
+    root.innerHTML = '<div class="muted">No cargoes generated yet.</div>';
+    return;
+  }
+  for (const item of market) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const left = document.createElement('div');
+    const right = document.createElement('div');
+
+    left.innerHTML = `
+      <div class="card-title">${item.name}</div>
+      <div class="meta">Base: ${cr(item.base)}/ton | Price roll: ${item.priceRoll}</div>
+      <div class="price">Offer: ${cr(item.pricePerTon)}/ton</div>
+      <div class="meta">Available: ${item.available} tons</div>
+    `;
+    right.innerHTML = `
+      <div class="choose">
+        <label><input type="checkbox" class="pick" data-id="${item.id}"></label>
+        <input type="number" class="qty-input" data-id="${item.id}" min="0" max="${item.available}" value="0" disabled>
+      </div>
+    `;
+    card.appendChild(left);
+    card.appendChild(right);
+    root.appendChild(card);
+  }
+
+  // Event listeners
+  root.querySelectorAll('.pick').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const id = e.target.dataset.id;
+      const qtyInput = root.querySelector(`.qty-input[data-id="${id}"]`);
+      if (e.target.checked) {
+        qtyInput.disabled = false;
+        if (parseInt(qtyInput.value) === 0) qtyInput.value = 1;
+      } else {
+        qtyInput.value = 0;
+        qtyInput.disabled = true;
+      }
+      updateManifestFromUI();
+    });
+  });
+  root.querySelectorAll('.qty-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const max = parseInt(e.target.max);
+      let v = parseInt(e.target.value);
+      if (isNaN(v) || v < 0) v = 0;
+      if (v > max) v = max;
+      e.target.value = v;
+      const id = e.target.dataset.id;
+      const cb = root.querySelector(`.pick[data-id="${id}"]`);
+      cb.checked = v > 0;
+      cb.dispatchEvent(new Event('change'));
+    });
+  });
+}
+
+function clearManifest() {
+  document.getElementById('manifestHint').style.display = '';
+  document.getElementById('manifestTable').style.display = 'none';
+  document.getElementById('manifestBody').innerHTML = '';
+  document.getElementById('totalTons').textContent = '0';
+  document.getElementById('totalPrice').textContent = 'Cr0';
+}
+
+function updateManifestFromUI() {
+  const root = document.getElementById('availableList');
+  const selections = [];
+  root.querySelectorAll('.qty-input').forEach(inp => {
+    const qty = parseInt(inp.value);
+    if (!qty) return;
+    const item = market.find(x => x.id === inp.dataset.id);
+    if (!item) return;
+    selections.push({ name: item.name, qty, pricePerTon: item.pricePerTon });
+  });
+  renderManifest(selections);
+}
+
+function renderManifest(rows) {
+  const hint = document.getElementById('manifestHint');
+  const table = document.getElementById('manifestTable');
+  const tbody = document.getElementById('manifestBody');
+  tbody.innerHTML = '';
+
+  if (!rows.length) {
+    hint.style.display = '';
+    table.style.display = 'none';
+    document.getElementById('totalTons').textContent = '0';
+    document.getElementById('totalPrice').textContent = 'Cr0';
+    return;
+  }
+
+  hint.style.display = 'none';
+  table.style.display = '';
+  let totalTons = 0;
+  let totalPrice = 0;
+
+  for (const r of rows) {
+    const subtotal = r.qty * r.pricePerTon;
+    totalTons += r.qty;
+    totalPrice += subtotal;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.name}</td><td>${r.qty}</td><td>${cr(r.pricePerTon)}</td><td>${cr(subtotal)}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  const broker = getBrokerInfo();
+  if (broker.commission > 0) {
+    const commissionAmt = Math.round(totalPrice * broker.commission);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3">Broker commission (${broker.commission * 100}%)</td><td>${cr(commissionAmt)}</td>`;
+    tbody.appendChild(tr);
+    totalPrice += commissionAmt;
+  }
+
+  document.getElementById('totalTons').textContent = totalTons;
+  document.getElementById('totalPrice').textContent = cr(totalPrice);
+}
+
+// ====== Event wiring ======
+document.getElementById('generateBtn').addEventListener('click', generateMarket);
+
+// --- New: UWP parsing event ---
+function showUwpError(msg) {
+  const el = document.getElementById('uwpError');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+function handleUwpParse() {
+  const val = document.getElementById('uwp').value.trim();
+  if (!val) {
+    showUwpError("Please enter a UWP string.");
+    setTradeCodeCheckboxes([]);
+    return;
+  }
+  // Accept both A867954-C and A867954C, but hyphen required for user clarity
+  let valid = false;
+  let raw = val.toUpperCase();
+  if (raw.length === 9 && raw[7] === '-') valid = true;
+  if (raw.length === 9 && raw[8] === '-') valid = true;
+  if (!valid) {
+    showUwpError("Format must be 8 hex digits, a hyphen, then 1 hex digit (e.g. A867954-C).");
+    setTradeCodeCheckboxes([]);
+    return;
+  }
+  const parsed = parseUWP(raw);
+  if (!parsed) {
+    showUwpError("Invalid UWP: must be 8 hexadecimal digits and 1 hex digit for tech level.");
+    setTradeCodeCheckboxes([]);
+    return;
+  }
+  showUwpError("");
+  const codes = computeTradeCodes(parsed);
+  setTradeCodeCheckboxes(codes);
+}
+// Button and Enter key listeners
+document.getElementById('parseUWPBtn').addEventListener('click', handleUwpParse);
+document.getElementById('uwp').addEventListener('keyup', function(e) {
+  if (e.key === "Enter") handleUwpParse();
+});
+</script>
+</body>
+</html>
