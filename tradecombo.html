@@ -302,7 +302,8 @@ function computeTradeCodes(u) {
   const codes = new Set();
   const { size, atmosphere: atm, water, population: pop, tech } = u;
   if (between(4, 9, atm) && between(4, 8, water) && between(5, 7, pop)) codes.add("Ag");
-  if ((size === 0) && (atm === 0) && (water === 0) codes.add("As");
+  if ((size === 0) && (atm === 0) && (water === 0)) codes.add("As");
+  // ^ also interfered here re issue #5
   if (pop === 0) codes.add("Ba");
   if (atm >= 2 && water === 0) codes.add("De");
   if (atm >= 10 && water >= 1) codes.add("Fl");
