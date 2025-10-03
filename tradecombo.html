@@ -307,7 +307,7 @@ function computeTradeCodes(u) {
   if (atm >= 2 && water === 0) codes.add("De");
   if (atm >= 10 && water >= 1) codes.add("Fl");
 //  if (inSet(atm, [5, 6, 8]) && size === 0) codes.add("Ga");
-  if inSet(atm, [5, 6, 8]) && between(4, 9, water) && between(4, 8, pop)) codes.add("Ga");
+  if (inSet(atm, [5, 6, 8]) && between(4, 9, water) && between(4, 8, pop)) codes.add("Ga");
 // ^ fixed issue #5 ? 
   if (pop >= 9) codes.add("Hi");
   if (tech >= 12) codes.add("Ht");
