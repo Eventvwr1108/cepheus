@@ -1,29 +1,21 @@
-Please create a utility that my sci-fi role playing game needs, to randomly generate a selection of buyers for the trade goods which the players will bring to a planet. I will describe how this can be done and I'd like you to output an HTML file which includes some JavaScript which will carry out the calculations and display the results. Please use CSS to style the page and use only colours from the list of 140 color names supported by all modern browsers.
+Please create a utility for my sci-fi role playing game, to randomly generate a buyer for the goods which the player will bring to a planet to sell. I will describe how this can be done and I'd like you to output an HTML file which includes some JavaScript which will carry out the calculations and display the results. Use CSS to style the page and use only colours from the list of 140 color names supported by all modern browsers.
 
-Step 0 (set up)
+Step 1 (set up)
+In the top panel, the player will be prompted to "Enter the Universal World Profile (UWP) code for the planet where you are selling, and the result of your "Sell" roll (2D6 and add Liaison skill plus DM for INT or SOC, whichever is highest)"
+At this point the script should generate the trade codes for the planet (use the code from attached file 2025-10-11-Generate-trade-codes.txt to calculate the applicable trade codes for the planet from the UWP) and display them in the top panel below the information entered by the player, along with the explanation:
+Ag = Agricultural | As = Asteroid | Ba = Barren | De = Desert | Fl = Non‑water fluid oceans | Ga = Garden | Hi = High population | Ht = High technology | Ic = Ice‑capped | In = Industrial | Lo = Low population | Lt = Low technology | Na = Non‑agricultural | Ni = Non‑industrial | Po = Poor | Ri = Rich | Wa = Water world | Va = Vacuum
 
-The player will enter the Universal World Profile (UWP) code for the planet where they are selling, enter the type and quantity of goods that they want to sell, the result of their "Sell" roll (calculated outside this utility) and select from three sets of radio buttons:
-* Broker = None / +1 / +2 / +3 / +4
+Step 2 (player choices)
+The player should now select from three sets of radio buttons:
 * Travel code = None or Amber / Red
 * Goods are = Legal / Slightly illegal / Highly illegal
-And be told "To sell the goods, roll 2D6 and add Liaison skill plus DM for INT or SOC (whichever is highest)". The page will allow the player to enter this number (called the "sell roll" which is capped at no lower than 2 and no higher than 16, though this restriction does not need to be shown)
-
-Please check the availability of brokers and ask the player to reselect before proceeding if they choose a broker who is not available on the chosen planet.
+* Broker (if available in this system) = None / +1 / +2 / +3 / +4
+Please check the availability of brokers as not all options may be available on the chosen planet.
 If the first character of the UWP is X, no broker can be found
 If the first character of the UWP is D or E, only Broker +1 can be found
 If the first character of the UWP is C, D or E, only Broker +1 or Broker +2 can be found
 If the first character of the UWP is B, C, D or E, only Broker +1 or Broker +2 or Broker +3 can be found
 If the first character of the UWP is A, any of the four brokers can be found
-
-The script will then:
-
-Step 1, calculate the applicable trade codes for the planet from the UWP
-
-Please use the code from attached file 2025-10-11-Generate-trade-codes.txt for that part of the script:
-
-Step 2, generate a profile for the buyer (to add colour to the transaction) - a description, a location to which the goods need to be delivered, any special circumstances for the sale - e.g., urgent / out-of-hours delivery needed
-
-Please use the code in attached file 2025-10-11-Generate-merchant.txt for the description of the buyer
 
 Step 3, refer to the following CSV files which contain the trade code modifiers and apply the highest applicable modifier for the types of goods being sold. 
 
@@ -79,9 +71,7 @@ Illegal Military Equipment,150000,2D,Ht+3,In+2,Hi+6,Ni+4
 Illegal Weapons and Armor,30000,2D,In+3,Ri+2,Ni+6,Po+4
 Highly Unusual Cargo,1000000,1D,Hi+1,Lo+1,Ri+1,Ht+1
 
-step 3.3 Please show a table which lists the different goods and allows the player to enter the number of tons of each good that they want to put up for sale
-
-Step 4, apply the modifiers for the starport type, broker, the travel code and the legality as shown below:
+Step 4, apply the modifiers for the starport type, broker, the travel code and the legality as shown below - to the 'sell roll' entered by the player:
 
 If a broker +1 is used, sell roll increased by 1
 If a broker +2 is used, sell roll increased by 2
@@ -100,9 +90,9 @@ If goods are = Legal, no effect on sell roll
 If goods are = Slightly illegal, sell roll increased by 1
 If goods are = Highly illegal, sell roll increased by 2
 
-Step 5, calculate the price that the buyer will pay for each item on the manifest and show on the table created in step 2.3, giving the player the option to select or deselect each line item to be sold and displaying underneath the final sale price
+Step 5, calculate the price that the buyer will pay for the player's goods (the sale price) 
 
-The price that the buyer will pay for the player's goods (the sale price) is a certain percentage of (Base cost × tons) and the percentage is found by referring to this table (CSV format), for the row that matches the sell roll:
+The price that the buyer will pay is a certain percentage of (Base cost × tons) and the percentage is found by referring to this table (CSV format), for the row that matches the modified 'sell roll':
 
 sell roll, percentage
 2,40
@@ -121,8 +111,22 @@ sell roll, percentage
 15,180
 16,200
 
-But if the player used a broker then remember to deduct the percentage due to the broker from the final price:
+Step 6, generate a profile for the buyer (to add colour to the transaction) - a description, a location to which the goods need to be delivered, any special circumstances for the sale - e.g., urgent / out-of-hours delivery needed
+
+Please use the code in attached file 2025-10-11-Generate-merchant.txt for the description of the buyer, and show the buyer profile in a middle panel.
+
+Step 7 - Please show a table in the bottom panel which lists the different goods and allows the player to enter the number of tons of each good that they want to sell. The table should have these columns, in order left to right:
+Name of goods, Base cost, Price offered, Profit or loss (per ton), Tons to be sold
+
+Name of goods and Base cost - these come from steps 3.1 and 3.2
+Proce offered - comes from step 5
+Profit or loss - can be calculated as the difference between the bacse cost and the price offered
+Tons to be sold - the player should be able to enter this number (a positive integer)
+
+Step 8 - on the bottom row of the table in the bottom panel, show the total value of the items to be sold but if the player used a broker then deduct the percentage due to the broker from the final price:
 If a broker +1 is used, deduct 5% commission
 If a broker +2 is used, deduct 10% commission
 If a broker +3 is used, deduct 15% commission
 If a broker +4 is used, deduct 20% commission
+
+Show the broker's commission underneath the table
