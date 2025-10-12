@@ -1,0 +1,128 @@
+Please create a utility that my sci-fi role playing game needs, to randomly generate a selection of buyers for the trade goods which the players will bring to a planet. I will describe how this can be done and I'd like you to output an HTML file which includes some JavaScript which will carry out the calculations and display the results. Please use CSS to style the page and use only colours from the list of 140 color names supported by all modern browsers.
+
+Step 0 (set up)
+
+The player will enter the Universal World Profile (UWP) code for the planet where they are selling, enter the type and quantity of goods that they want to sell, the result of their "Sell" roll (calculated outside this utility) and select from three sets of radio buttons:
+* Broker = None / +1 / +2 / +3 / +4
+* Travel code = None or Amber / Red
+* Goods are = Legal / Slightly illegal / Highly illegal
+And be told "To sell the goods, roll 2D6 and add Liaison skill plus DM for INT or SOC (whichever is highest)". The page will allow the player to enter this number (called the "sell roll" which is capped at no lower than 2 and no higher than 16, though this restriction does not need to be shown)
+
+Please check the availability of brokers and ask the player to reselect before proceeding if they choose a broker who is not available on the chosen planet.
+If the first character of the UWP is X, no broker can be found
+If the first character of the UWP is D or E, only Broker +1 can be found
+If the first character of the UWP is C, D or E, only Broker +1 or Broker +2 can be found
+If the first character of the UWP is B, C, D or E, only Broker +1 or Broker +2 or Broker +3 can be found
+If the first character of the UWP is A, any of the four brokers can be found
+
+The script will then:
+
+Step 1, calculate the applicable trade codes for the planet from the UWP
+
+Please use the code from attached file 2025-10-11-Generate-trade-codes.txt for that part of the script:
+
+Step 2, generate a profile for the buyer (to add colour to the transaction) - a description, a location to which the goods need to be delivered, any special circumstances for the sale - e.g., urgent / out-of-hours delivery needed
+
+Please use the code in attached file 2025-10-11-Generate-merchant.txt for the description of the buyer
+
+Step 3, refer to the following CSV files which contain the trade code modifiers and apply the highest applicable modifier for the types of goods being sold. 
+
+Step 3.1 There are six types of common goods which the player may wish to sell. This data, in CSV format with first row being headings, shows the six types, the price per ton, and the price modifiers that apply. * Please ensure that all this data is included in the finished code, exactly as shown in the table *
+The price modifiers are in the last two columns - with the heading "First Sale DM" and "Second Sale DM". The modifier is a trade code (as calculated above) then a + and then a number which is added to the sell roll if the planet has the trade code shown. Even if both the trade codes are present, only one of the two modifiers - the highest one - is added to the sell roll.
+
+Common goods,Cost,Quantity,First Purchase DM,Second Purchase DM,First Sale DM,Second Sale DM
+Basic Consumable Goods,1000,10D,Ag+3,Ga+2,Hi+1,Ri+2
+Basic Electronics,25000,10D,Ht+2,In+4,Ni+2,Po+1
+Basic Machine Parts,1000,10D,In+3,Ri+2,Na+1,Ni+2
+Basic Manufactured Goods,20000,10D,In+3,Ri+2,Ag+1,Ni+2
+Basic Raw Materials,5000,10D,As+3,Ni+1,In+2,Ri+2
+Common Unrefined Ore,2000,10D,As+2,Va+1,In+2,Na+1
+
+Step 3.2 There are many kinds of trade goods. This extra data, also in CSV format with first row being headings, shows the six types, the price per ton, and the price modifiers that apply.  * Please ensure that all this data is included in the finished code, exactly as shown in the table *
+The price modifiers are in the last two columns - with the heading "First Sale DM" and "Second Sale DM". The modifier is a trade code (as calculated above) then a + and then a number which is added to the sell roll if the planet has the trade code shown. Even if both the trade codes are present, only one of the two modifiers - the highest one - is added to the sell roll.
+
+Trade Goods,Cost,Quantity,First Purchase DM,Second Purchase DM,First Sale DM,Second Sale DM
+Advanced Electronics,100000,5D,Ht+2,In+4,Ni+2,Po+1
+Advanced Manufactured Goods,200000,5D,In+3,Ri+2,Ag+1,Ni+2
+Agricultural Equipment,150000,1D,In+3,Ri+2,Ag+2,Ga+1
+Animal Products,1500,20D,Ag+2,Ga+3,Hi+2,Ri+1
+Collectibles,50000,1D,In+2,Ri+3,Hi+2,Ni+1
+Computers,150000,2D,Ht+3,In+2,Na+1,Ni+2
+Crystals and Gems,20000,5D,Ni+3,Na+2,In+1,Ri+2
+Cybernetic Parts,250000,5D,Ht+3,Ri+2,Na+1,Ni+2
+Food service equipment,4000,2D,In+3,Na+2,Ag+1,Ni+2
+Furniture,5000,4D,Ag+2,Ga+3,Hi+1,Ri+2
+Gambling Devices and Equipment,4000,1D,Hi+2,Ri+3,Na+2,Ni+1
+Grav Vehicle Parts,160000,1D,Ht+3,Ri+2,Ni+2,Po+1
+Grocery Products,6000,5D,Ag+3,Ga+2,Hi+1,Ri+2
+Household Appliances,12000,4D,Hi+2,In+3,Na+1,Ni+2
+Industrial Supplies,75000,2D,In+3,Ri+2,Na+1,Ni+2
+Liquor,15000,5D,Ag+3,Ga+2,In+1,Ri+2
+Luxury foodstuffs and fabrics,150000,1D,Ag+2,Ga+3,In+1,Ri+2
+Manufacturing Equipment,750000,5D,In+3,Ri+2,Na+1,Ni+2
+Medical Equipment,50000,5D,Ht+2,Ri+3,Hi+1,In+2
+Petrochemicals,10000,10D,Na+2,Fl+3,Ag+1,In+2
+Pharmaceuticals,100000,1D,Ht+3,Wa+2,In+2,Ri+1
+Complex chemical compounds,7000,20D,In+2,Ri+3,Ni+2,Va+1
+Precious Metals,50000,1D,As+3,Ic+2,In+1,Ri+2
+Radioactives,1000000,1D,As+2,Ni+3,In+2,Ht+1
+Robots and Drones,500000,5D,Ht+3,Ri+2,Ni+1,Ri+2
+Scientific Equipment,50000,5D,Ht+3,Ri+2,Hi+2,Ni+1
+Survival Gear,4000,2D,Ga+1,Ri+2,Fl+2,Va+1
+Textiles,3000,15D,Ag+3,Ni+2,Na+1,Ri+2
+Uncommon Raw Materials,50000,10D,Ag+3,Ni+2,In+2,Na+1
+Uncommon Unrefined Ores,20000,10D,As+2,Va+1,In+2,Na+1
+Illicit Luxury Goods,150000,1D,Ag+2,Ga+3,In+4,Ri+6
+Illicit Pharmaceuticals,100000,1D,Ht+3,Wa+2,In+6,Ri+4
+Illegal Medical Research Material,50000,5D,Ht+2,Ri+3,In+6,Na+4
+Illegal Military Equipment,150000,2D,Ht+3,In+2,Hi+6,Ni+4
+Illegal Weapons and Armor,30000,2D,In+3,Ri+2,Ni+6,Po+4
+Highly Unusual Cargo,1000000,1D,Hi+1,Lo+1,Ri+1,Ht+1
+
+step 3.3 Please show a table which lists the different goods and allows the player to enter the number of tons of each good that they want to put up for sale
+
+Step 4, apply the modifiers for the starport type, broker, the travel code and the legality as shown below:
+
+If a broker +1 is used, sell roll increased by 1
+If a broker +2 is used, sell roll increased by 2
+If a broker +3 is used, sell roll increased by 3
+If a broker +4 is used, sell roll increased by 4
+
+If starport = A, sell roll reduced by 3
+If starport = B, sell roll reduced by 2
+If starport = C, sell roll reduced by 1
+If starport = X, sell roll increased by 1
+
+If travel code = None or Amber, no effect on sell roll
+If travel code = Red, sell roll increased by 2
+
+If goods are = Legal, no effect on sell roll
+If goods are = Slightly illegal, sell roll increased by 1
+If goods are = Highly illegal, sell roll increased by 2
+
+Step 5, calculate the price that the buyer will pay for each item on the manifest and show on the table created in step 2.3, giving the player the option to select or deselect each line item to be sold and displaying underneath the final sale price
+
+The price that the buyer will pay for the player's goods (the sale price) is a certain percentage of (Base cost × tons) and the percentage is found by referring to this table (CSV format), for the row that matches the sell roll:
+
+sell roll, percentage
+2,40
+3,50
+4,60
+5,70
+6,80
+7,90
+8,100
+9,110
+10,120
+11,130
+12,140
+13,150
+14,160
+15,180
+16,200
+
+But if the player used a broker then remember to deduct the percentage due to the broker from the final price:
+If a broker +1 is used, deduct 5% commission
+If a broker +2 is used, deduct 10% commission
+If a broker +3 is used, deduct 15% commission
+If a broker +4 is used, deduct 20% commission
