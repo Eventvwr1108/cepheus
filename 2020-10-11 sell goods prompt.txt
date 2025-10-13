@@ -119,8 +119,8 @@ Step 7 - Please show a table in the bottom panel which lists the different goods
 Name of goods, Base cost, Price offered, Profit or loss (per ton), Tons to be sold
 
 Name of goods and Base cost - these come from steps 3.1 and 3.2
-Proce offered - comes from step 5
-Profit or loss - can be calculated as the difference between the bacse cost and the price offered
+Price offered - comes from step 5
+Profit or loss - can be calculated as the difference between the base cost and the price offered
 Tons to be sold - the player should be able to enter this number (a positive integer)
 
 Step 8 - on the bottom row of the table in the bottom panel, show the total value of the items to be sold but if the player used a broker then deduct the percentage due to the broker from the final price:
@@ -130,3 +130,4 @@ If a broker +3 is used, deduct 15% commission
 If a broker +4 is used, deduct 20% commission
 
 Show the broker's commission underneath the table
+
