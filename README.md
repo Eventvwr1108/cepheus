@@ -5,11 +5,13 @@
 Please note that the code is [here](https://github.com/Eventvwr1108/cepheus/blob/main/tradecombo.html). Permission to make this available was given by Omer (thanks Omer).  
 The other similar files in the repo are just earlier versions I have untidly left lying around
 
+## patrons ##  
+[This page](https://eventvwr1108.github.io/cepheus/2D6_scifi_patron_tables.html) may help the referee to come up with a random patro with a job for the PCs. Using all the tables tends to give results that are a bit contradictory. You may wish to omit or change some results if they don't make any sense. Or use your imagination to <i>somehow</i> make a coherent narrative out of it. Good luck with that  
+
 ## NEW! selling ##
 coming soon...
 
 ## disclaimer ##
 I have very little skill with JavaScript and all the heavy lifting here was done by generative AI. I know some people don't like that so just letting you know.   
   
-
 If you have feedback or suggestions please let me know, if you can. I'm no expert on Github but I think you can post or start a [discussion](https://github.com/Eventvwr1108/cepheus/discussions) or raise an [issue](https://github.com/Eventvwr1108/cepheus/issues)?
